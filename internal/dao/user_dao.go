@@ -47,3 +47,23 @@ func (udao *UserDAO) GetByUsername(username string) (*model.User, error) {
 
 	return &user, nil
 }
+
+func (udao *UserDAO) GetByUserID(userid int64) (*model.User, error) {
+	var user model.User
+	query := `
+		select id, username, password, created_at
+		from user
+		where id = ?
+	`
+	err := udao.db.Get(&user, query, userid)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		fmt.Println("failed: GetByUsername()", err)
+		return nil, err
+	}
+
+	return &user, nil
+}
+
