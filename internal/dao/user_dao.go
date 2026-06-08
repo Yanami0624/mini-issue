@@ -14,21 +14,19 @@ type UserDAO struct {
 }
 
 func NewUserDAO(db *sqlx.DB) *UserDAO {
-	udao := new(UserDAO)
-	udao.db = db
-	return udao
+	return &UserDAO{db}
 }
 
-func (udao *UserDAO) CreateUser(username, hashedPassword string) error {
+func (dao *UserDAO) CreateUser(username, hashedPassword string) error {
 	timestamp := time.Now()
-	_, err := udao.db.Exec("insert into `user` (username, password, created_at) values (?, ?, ?)", username, hashedPassword, timestamp)
+	_, err := dao.db.Exec("insert into `user` (username, password, created_at) values (?, ?, ?)", username, hashedPassword, timestamp)
 	if err != nil {
 		fmt.Println("failed: CreateUser()", err)
 	}
 	return err
 }
 
-func (udao *UserDAO) GetByUsername(username string) (*model.User, error) {
+func (dao *UserDAO) GetByUsername(username string) (*model.User, error) {
 	var user model.User
 	query := `
 		select id, username, password, created_at
@@ -36,7 +34,7 @@ func (udao *UserDAO) GetByUsername(username string) (*model.User, error) {
 		where username = ?
 	`
 
-	err := udao.db.Get(&user, query, username)
+	err := dao.db.Get(&user, query, username)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -48,14 +46,14 @@ func (udao *UserDAO) GetByUsername(username string) (*model.User, error) {
 	return &user, nil
 }
 
-func (udao *UserDAO) GetByUserID(userid int64) (*model.User, error) {
+func (dao *UserDAO) GetByUserID(userid int64) (*model.User, error) {
 	var user model.User
 	query := `
 		select id, username, password, created_at
 		from user
 		where id = ?
 	`
-	err := udao.db.Get(&user, query, userid)
+	err := dao.db.Get(&user, query, userid)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

@@ -11,7 +11,7 @@ import (
 )
 
 type UserService struct {
-	udao *UserDAO
+	dao *UserDAO
 }
 
 func NewUserService(userDAO *UserDAO) *UserService {
@@ -19,7 +19,7 @@ func NewUserService(userDAO *UserDAO) *UserService {
 }
 
 func (us UserService) Register(req RegisterRequest) error {
-	exist, _ := us.udao.GetByUsername(req.Username)
+	exist, _ := us.dao.GetByUsername(req.Username)
 	switch {
 	case len(req.Username) == 0:
 		return errors.New("username can not be empty")
@@ -30,14 +30,14 @@ func (us UserService) Register(req RegisterRequest) error {
 	}
 
 	hashpassword, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	return us.udao.CreateUser(req.Username, string(hashpassword))
+	return us.dao.CreateUser(req.Username, string(hashpassword))
 }
 
 func (us UserService) Login(req LoginRequest) (*LoginResponse, error) {
 	if req.Username == "" || req.Password == "" {
 		return nil, errors.New("username and password are required")
 	}
-	user, err := us.udao.GetByUsername(req.Username)
+	user, err := us.dao.GetByUsername(req.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (us UserService) Login(req LoginRequest) (*LoginResponse, error) {
 }
 
 func (us *UserService) GetMe(userid int64) (*User, error) {
-	user, err := us.udao.GetByUserID(userid)
+	user, err := us.dao.GetByUserID(userid)
 	if err != nil {
 		return nil, errors.New("invalid userid")
 	}
