@@ -247,6 +247,78 @@ go run ./cmd
 http://localhost:8080
 ```
 
+也可以用脚本启动：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/api/start-server.ps1
+```
+
+## 访问服务器脚本
+
+`scripts/api` 目录里放了一组 PowerShell 脚本，用来观察客户端和服务器之间的请求/响应交互。每个脚本都会打印：
+
+- 请求方法和 URL
+- 请求头
+- 请求体
+- 响应状态码
+- 响应 JSON
+
+建议开两个终端：
+
+第一个终端启动服务器：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/api/start-server.ps1
+```
+
+第二个终端访问接口。
+
+### 一键完整流程
+
+这个脚本会自动注册一个新用户、登录、拿 token 访问 `/me`：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/api/full_flow.ps1
+```
+
+也可以指定用户：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/api/full_flow.ps1 -Username alice -Password 123456
+```
+
+### 分步骤访问
+
+注册：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/api/register.ps1 -Username alice -Password 123456
+```
+
+登录：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/api/login.ps1 -Username alice -Password 123456
+```
+
+登录成功后，脚本会把 token 保存到：
+
+```text
+.mini-issue-token.json
+```
+
+带 token 访问当前用户：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/api/me.ps1
+```
+
+观察未授权请求：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/api/unauthorized.ps1
+```
+
 ## 测试
 
 运行全部测试：

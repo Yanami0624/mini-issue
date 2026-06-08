@@ -1,0 +1,6 @@
+.mini-issue-token.json
+
+# Local build/test outputs
+*.exe
+*.test
+coverage.out
