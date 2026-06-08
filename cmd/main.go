@@ -2,19 +2,25 @@ package main
 
 import (
 	"log"
-	. "mini-issue/internal/dao"
-	. "mini-issue/pkg/db"
+
+	"mini-issue/internal/controller"
+	"mini-issue/internal/dao"
+	"mini-issue/internal/router"
+	"mini-issue/internal/service"
+	"mini-issue/pkg/db"
 )
 
 func main() {
-	db := Link2DB()
-	if db == nil {
-		log.Fatal("connect mysql failed")
-	}
-	defer db.Close()
+	mysqlDB := db.NewMySQL()
+	defer mysqlDB.Close()
 
-	user := NewUserDAO(db)
-	if err := user.CreateUser("Alice", "1234"); err != nil {
+	userDAO := dao.NewUserDAO(mysqlDB)
+	userService := service.NewUserService(userDAO)
+	userController := controller.NewUserController(userService)
+
+	r := router.NewRouter(userController)
+
+	if err := r.Run(":8080"); err != nil {
 		log.Fatal(err)
 	}
 }

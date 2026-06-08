@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	gojwt "github.com/golang-jwt/jwt/v5"
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 var secret = []byte("mini-issue-secret")
@@ -12,26 +12,25 @@ var secret = []byte("mini-issue-secret")
 type Claims struct {
 	UserID   int64  `json:"user_id"`
 	Username string `json:"username"`
-	gojwt.RegisteredClaims
+	jwt.RegisteredClaims
 }
 
-
 func GenerateToken(userid int64, username string) (string, error) {
-	claims := Claims {
-		UserID: userid,
+	claims := Claims{
+		UserID:   userid,
 		Username: username,
-		RegisteredClaims: gojwt.RegisteredClaims{
-			ExpiresAt: gojwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
-			IssuedAt: gojwt.NewNumericDate(time.Now()),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 
-	token := gojwt.NewWithClaims(gojwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(secret)
 }
 
 func ParseToken(tokenstring string) (*Claims, error) {
-	token, err := gojwt.ParseWithClaims(tokenstring, &Claims{}, func(token *gojwt.Token) (any, error) {
+	token, err := jwt.ParseWithClaims(tokenstring, &Claims{}, func(token *jwt.Token) (any, error) {
 		return secret, nil
 	})
 	if err != nil {

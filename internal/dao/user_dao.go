@@ -66,4 +66,3 @@ func (udao *UserDAO) GetByUserID(userid int64) (*model.User, error) {
 
 	return &user, nil
 }
-

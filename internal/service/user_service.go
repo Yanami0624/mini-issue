@@ -11,17 +11,21 @@ import (
 )
 
 type UserService struct {
-	udao UserDAO
+	udao *UserDAO
 }
 
-func (us UserService)Register(req RegisterRequest) error {
+func NewUserService(userDAO *UserDAO) *UserService {
+	return &UserService{userDAO}
+}
+
+func (us UserService) Register(req RegisterRequest) error {
 	exist, _ := us.udao.GetByUsername(req.Username)
 	switch {
 	case len(req.Username) == 0:
 		return errors.New("username can not be empty")
 	case len(req.Password) < 6:
 		return errors.New("password should have 6 characters at least")
-	case exist != nil :
+	case exist != nil:
 		return errors.New("user already exist")
 	}
 
@@ -29,7 +33,7 @@ func (us UserService)Register(req RegisterRequest) error {
 	return us.udao.CreateUser(req.Username, string(hashpassword))
 }
 
-func (us UserService)Login(req LoginRequest) (*LoginResponse, error) {
+func (us UserService) Login(req LoginRequest) (*LoginResponse, error) {
 	if req.Username == "" || req.Password == "" {
 		return nil, errors.New("username and password are required")
 	}
@@ -50,10 +54,10 @@ func (us UserService)Login(req LoginRequest) (*LoginResponse, error) {
 		return nil, err
 	}
 
-	return &model.LoginResponse{Token:token}, nil
+	return &model.LoginResponse{Token: token}, nil
 }
 
-func (us *UserService)GetMe(userid int64) (*User, error) {
+func (us *UserService) GetMe(userid int64) (*User, error) {
 	user, err := us.udao.GetByUserID(userid)
 	if err != nil {
 		return nil, errors.New("invalid userid")

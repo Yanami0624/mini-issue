@@ -7,7 +7,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func Link2DB() *sqlx.DB {
+func NewMySQL() *sqlx.DB {
 	db, err := sqlx.Open("mysql", "root:@tcp(127.0.0.1:3306)/test?parseTime=true")
 	if err != nil {
 		fmt.Println("Open mysql failed", err)
