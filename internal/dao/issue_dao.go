@@ -17,14 +17,11 @@ func NewIssueDAO(db *sqlx.DB) *IssueDAO {
 	return &IssueDAO{db}
 }
 
-func (dao *IssueDAO) CreateIssue(
-	userid int64,
-	title, content, status string,
-	priority int) error {
+func (dao *IssueDAO) CreateIssue(issue model.Issue) error {
 	timestamp := time.Now()
 	_, err := dao.db.Exec(
 		"insert into issue (user_id, title, content, status, priority, created_at, updated_at)",
-		userid, title, content, status, priority, timestamp, timestamp)
+		issue.UserID, issue.Title, issue.Content, issue.Status, issue.Priority, timestamp, timestamp)
 	if err != nil {
 		fmt.Println("failed: CreateIssue()", err)
 	}
@@ -70,13 +67,13 @@ func (dao *IssueDAO) UpdateIssue(issue *model.Issue) error {
 	return err
 }
 
-func (dao *IssueDAO) DeleteIssue(issueid int64, update_comment string) error {
+func (dao *IssueDAO) DeleteIssue(issueid int64) error {
 	query := `
 		delete from issue
 		where id = ?
 	`
 
-	_, err := dao.db.Exec(query, update_comment, issueid)
+	_, err := dao.db.Exec(query, issueid)
 	if err != nil {
 		fmt.Println("failed: GetByUsername()", err)
 		return err

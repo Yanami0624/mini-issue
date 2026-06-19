@@ -11,14 +11,14 @@ import (
 )
 
 type UserController struct {
-	userService *service.UserService
+	s *service.UserService
 }
 
 func NewUserController(us *service.UserService) *UserController {
 	return &UserController{us}
 }
 
-func (ctl *UserController) Register(ctx *gin.Context) {
+func (c *UserController) Register(ctx *gin.Context) {
 	var req model.RegisterRequest
 
 	err := ctx.ShouldBindJSON(&req)
@@ -27,7 +27,7 @@ func (ctl *UserController) Register(ctx *gin.Context) {
 		return
 	}
 
-	err = ctl.userService.Register(req)
+	err = c.s.Register(req)
 	if err != nil {
 		response.Fail(ctx, 400, err.Error())
 		return
@@ -36,7 +36,7 @@ func (ctl *UserController) Register(ctx *gin.Context) {
 	response.Success(ctx, nil)
 }
 
-func (ctl *UserController) Login(ctx *gin.Context) {
+func (c *UserController) Login(ctx *gin.Context) {
 	var req model.LoginRequest
 
 	err := ctx.ShouldBindJSON(&req)
@@ -45,7 +45,7 @@ func (ctl *UserController) Login(ctx *gin.Context) {
 		return
 	}
 
-	resp, err := ctl.userService.Login(req)
+	resp, err := c.s.Login(req)
 	if err != nil {
 		response.Fail(ctx, 400, err.Error())
 		return
@@ -54,26 +54,26 @@ func (ctl *UserController) Login(ctx *gin.Context) {
 	response.Success(ctx, resp)
 }
 
-func (ctl *UserController) Me(c *gin.Context) {
-	value, exists := c.Get("user_id")
+func (c *UserController) Me(ctx *gin.Context) {
+	value, exists := ctx.Get("user_id")
 	if !exists {
-		response.Fail(c, 401, "unauthorized")
+		response.Fail(ctx, 401, "unauthorized")
 		return
 	}
 
 	userID, ok := value.(int64)
 	if !ok {
-		response.Fail(c, 500, "invalid user id in context")
+		response.Fail(ctx, 500, "invalid user id in context")
 		return
 	}
 
-	user, err := ctl.userService.GetMe(userID)
+	user, err := c.s.GetMe(userID)
 	if err != nil {
-		response.Fail(c, 400, err.Error())
+		response.Fail(ctx, 400, err.Error())
 		return
 	}
 
-	response.Success(c, user)
+	response.Success(ctx, user)
 }
 
 func GetUserID(c *gin.Context) (int64, error) {

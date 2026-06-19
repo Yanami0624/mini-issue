@@ -18,8 +18,8 @@ func NewUserService(userDAO *UserDAO) *UserService {
 	return &UserService{userDAO}
 }
 
-func (us UserService) Register(req RegisterRequest) error {
-	exist, _ := us.dao.GetByUsername(req.Username)
+func (s UserService) Register(req RegisterRequest) error {
+	exist, _ := s.dao.GetByUsername(req.Username)
 	switch {
 	case len(req.Username) == 0:
 		return errors.New("username can not be empty")
@@ -30,14 +30,14 @@ func (us UserService) Register(req RegisterRequest) error {
 	}
 
 	hashpassword, _ := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	return us.dao.CreateUser(req.Username, string(hashpassword))
+	return s.dao.CreateUser(req.Username, string(hashpassword))
 }
 
-func (us UserService) Login(req LoginRequest) (*LoginResponse, error) {
+func (s UserService) Login(req LoginRequest) (*LoginResponse, error) {
 	if req.Username == "" || req.Password == "" {
 		return nil, errors.New("username and password are required")
 	}
-	user, err := us.dao.GetByUsername(req.Username)
+	user, err := s.dao.GetByUsername(req.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -57,8 +57,8 @@ func (us UserService) Login(req LoginRequest) (*LoginResponse, error) {
 	return &model.LoginResponse{Token: token}, nil
 }
 
-func (us *UserService) GetMe(userid int64) (*User, error) {
-	user, err := us.dao.GetByUserID(userid)
+func (s *UserService) GetMe(userid int64) (*User, error) {
+	user, err := s.dao.GetByUserID(userid)
 	if err != nil {
 		return nil, errors.New("invalid userid")
 	}

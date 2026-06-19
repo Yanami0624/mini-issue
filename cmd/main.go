@@ -18,7 +18,11 @@ func main() {
 	userService := service.NewUserService(userDAO)
 	userController := controller.NewUserController(userService)
 
-	r := router.NewRouter(userController)
+	issueDAO := dao.NewIssueDAO(mysqlDB)
+	issueService := service.NewIssueService(issueDAO)
+	issueController := controller.NewIssueController(issueService)
+
+	r := router.NewRouter(userController, issueController)
 
 	if err := r.Run(":8080"); err != nil {
 		log.Fatal(err)
