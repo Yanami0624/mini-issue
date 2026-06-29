@@ -20,7 +20,7 @@ func NewIssueDAO(db *sqlx.DB) *IssueDAO {
 func (dao *IssueDAO) CreateIssue(issue model.Issue) error {
 	timestamp := time.Now()
 	_, err := dao.db.Exec(
-		"insert into issue (user_id, title, content, status, priority, created_at, updated_at)",
+		"insert into issues (user_id, title, content, status, priority, created_at, updated_at) values (?, ?, ?, ?, ?, ?, ?)",
 		issue.UserID, issue.Title, issue.Content, issue.Status, issue.Priority, timestamp, timestamp)
 	if err != nil {
 		fmt.Println("failed: CreateIssue()", err)
@@ -31,8 +31,8 @@ func (dao *IssueDAO) CreateIssue(issue model.Issue) error {
 func (dao *IssueDAO) GetByIssueID(issueid int64) (*model.Issue, error) {
 	var issue model.Issue
 	query := `
-		select *
-		from issue
+		select id, user_id, title, content, status, priority, created_at, updated_at
+		from issues
 		where id = ?
 	`
 
@@ -51,7 +51,7 @@ func (dao *IssueDAO) GetByIssueID(issueid int64) (*model.Issue, error) {
 func (dao *IssueDAO) UpdateIssue(issue *model.Issue) error {
 	query := `
 		UPDATE issues
-		SET title = ?, content = ?, status = ?, priority = ?
+		SET title = ?, content = ?, status = ?, priority = ?, updated_at = ?
 		WHERE id = ?
 	`
 
@@ -61,6 +61,7 @@ func (dao *IssueDAO) UpdateIssue(issue *model.Issue) error {
 		issue.Content,
 		issue.Status,
 		issue.Priority,
+		time.Now(),
 		issue.ID,
 	)
 
@@ -69,7 +70,7 @@ func (dao *IssueDAO) UpdateIssue(issue *model.Issue) error {
 
 func (dao *IssueDAO) DeleteIssue(issueid int64) error {
 	query := `
-		delete from issue
+		delete from issues
 		where id = ?
 	`
 
@@ -85,9 +86,9 @@ func (dao *IssueDAO) DeleteIssue(issueid int64) error {
 func (dao *IssueDAO) ListIssues(limit, offset int) ([]model.Issue, error) {
 	var issues []model.Issue
 	query := `
-		select * 
+		select id, user_id, title, content, status, priority, created_at, updated_at
 		from issues
-		oedered by id
+		order by id desc
 		limit ? offset ?
 	`
 

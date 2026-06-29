@@ -156,7 +156,11 @@ func newTestRouter(t *testing.T) (*gin.Engine, sqlmock.Sqlmock, func()) {
 	userService := service.NewUserService(userDAO)
 	userController := controller.NewUserController(userService)
 
-	return NewRouter(userController), mock, func() {
+	issueDAO := dao.NewIssueDAO(sqlxDB)
+	issueService := service.NewIssueService(issueDAO)
+	issueController := controller.NewIssueController(issueService)
+
+	return NewRouter(userController, issueController), mock, func() {
 		_ = sqlxDB.Close()
 	}
 }

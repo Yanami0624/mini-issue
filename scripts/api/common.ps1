@@ -80,17 +80,8 @@ function Invoke-MiniIssueApi {
 		}
 	}
 
-	$params = @{
-		Method      = $Method
-		Uri         = $Url
-		Headers     = $Headers
-		ContentType = "application/json"
-		ErrorAction = "Stop"
-	}
-
 	if ($null -ne $Body) {
 		$jsonBody = $Body | ConvertTo-Json -Depth 20
-		$params.Body = $jsonBody
 		Write-Host "Body:"
 		Write-Host (ConvertTo-PrettyJson $jsonBody)
 	}
@@ -100,14 +91,37 @@ function Invoke-MiniIssueApi {
 	$json = $null
 
 	try {
-		$response = Invoke-WebRequest @params
+		$request = [System.Net.HttpWebRequest]::Create($Url)
+		$request.Method = $Method
+		$request.ContentType = "application/json"
+
+		foreach ($key in $Headers.Keys) {
+			$request.Headers[$key] = [string]$Headers[$key]
+		}
+
+		if ($null -ne $Body) {
+			$bodyBytes = [System.Text.Encoding]::UTF8.GetBytes($jsonBody)
+			$request.ContentLength = $bodyBytes.Length
+			$requestStream = $request.GetRequestStream()
+			try {
+				$requestStream.Write($bodyBytes, 0, $bodyBytes.Length)
+			} finally {
+				$requestStream.Close()
+			}
+		}
+
+		$response = $request.GetResponse()
 		$statusCode = [int]$response.StatusCode
-		$content = [string]$response.Content
+		$content = Read-ResponseBody $response
 	} catch {
 		$response = $_.Exception.Response
 		if ($null -ne $response) {
 			$statusCode = [int]$response.StatusCode
-			$content = Read-ResponseBody $response
+			if (-not [string]::IsNullOrWhiteSpace($_.ErrorDetails.Message)) {
+				$content = $_.ErrorDetails.Message
+			} else {
+				$content = Read-ResponseBody $response
+			}
 		} else {
 			$statusCode = 0
 			$content = $_.Exception.Message

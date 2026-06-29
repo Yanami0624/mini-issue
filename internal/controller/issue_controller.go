@@ -20,7 +20,11 @@ func NewIssueController(is *service.IssueService) *IssueController {
 
 func (c *IssueController) CreateIssue(ctx *gin.Context) {
 	userid, err := GetUserID(ctx)
-	
+	if err != nil {
+		response.Fail(ctx, 401, "unauthorized")
+		return
+	}
+
 	var req model.CreateIssueRequest
 
 	err = ctx.ShouldBindJSON(&req)
@@ -28,7 +32,7 @@ func (c *IssueController) CreateIssue(ctx *gin.Context) {
 		response.Fail(ctx, 400, "invalid request body")
 		return
 	}
-	
+
 	err = c.s.CreateIssue(userid, req)
 	if err != nil {
 		response.Fail(ctx, 400, err.Error())
@@ -46,7 +50,11 @@ func (c *IssueController) GetIssue(ctx *gin.Context) {
 	}
 	issue, err := c.s.GetIssueByID(issueid)
 	if err != nil {
-		response.Fail(ctx, 404, err.Error())
+		if err.Error() == "issue not found" {
+			response.Fail(ctx, 404, err.Error())
+			return
+		}
+		response.Fail(ctx, 400, err.Error())
 		return
 	}
 	response.Success(ctx, issue)
